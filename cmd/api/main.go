@@ -1,8 +1,22 @@
 package main 
 
-import "fmt"
+import (
+
+	
+	"github.com/gin-gonic/gin"
+)
 
 func main(){
-	fmt.Println("we out here!!!")
-	fmt.Println("wagwan")
+	var router *gin.Engine = gin.Default()
+	router.SetTrustedProxies(nil)
+	router.GET("/", func(c *gin.Context){
+		c.JSON(200, gin.H{
+			"message": "Welcome to GoLang To-Do REST API with Auth",
+			"success": true,
+		})
+
+	})
+	println("server starting")
+	router.Run(":3000")
+
 } 
