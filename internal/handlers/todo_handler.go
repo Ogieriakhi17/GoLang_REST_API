@@ -9,7 +9,7 @@ import (
 )
 
 type CreateToDoInput struct {
-	Title     string `json:"title" binding "required"`
+	Title     string `json:"title" binding:"required"`
 	Completed bool   `json:"completed"`
 }
 

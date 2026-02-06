@@ -4,6 +4,7 @@ import (
 	"log"
 	"todos_api/internal/config"
 	"todos_api/internal/database"
+	"todos_api/internal/handlers"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -38,6 +39,8 @@ func main() {
 
 	})
 	println("server starting")
+
+	router.POST("/todos", handlers.CreateToDoHandler(pool))
 	router.Run(":" + cfg.Port)
 
 }
