@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func main(){
+func main() {
 
 	var cfg *config.Config
 	var err error
@@ -23,16 +23,16 @@ func main(){
 	var pool *pgxpool.Pool
 
 	pool, err = database.Connect(cfg.DatabaseURL) // now create a pool form the config created
-	if err != nil{
+	if err != nil {
 		log.Fatal("Failed to connect to the database")
 	}
 	defer pool.Close()
 	var router *gin.Engine = gin.Default()
 	router.SetTrustedProxies(nil)
-	router.GET("/", func(c *gin.Context){
+	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "Welcome to GoLang To-Do REST API with Auth",
-			"success": true,
+			"message":  "Welcome to GoLang To-Do REST API with Auth",
+			"success":  true,
 			"database": "connected",
 		})
 
@@ -40,4 +40,4 @@ func main(){
 	println("server starting")
 	router.Run(":" + cfg.Port)
 
-} 
+}
