@@ -15,6 +15,11 @@ type CreateToDoInput struct {
 	Completed bool   `json:"completed"`
 }
 
+type UpdateTodoInput struct {
+	Title     *string `json: "title"`
+	Completed *bool   `json: "completed"`
+}
+
 func CreateToDoHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input CreateToDoInput
@@ -71,5 +76,61 @@ func GetTodoByIDHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, todos)
+	}
+}
+
+func UpdateTodoHandler(pool *pgxpool.Pool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idString := c.Param("id")
+		id, err := strconv.Atoi(idString)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid todo ID"})
+			return
+		}
+
+		var input UpdateTodoInput
+
+		if err := c.ShouldBind(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if input.Title == nil && input.Completed == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "At least one field is required (title/completed)"})
+			return
+		}
+
+		existing, err := repository.GetTodoByID(pool, id)
+
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				c.JSON(http.StatusNotFound, gin.H{"error": "ToDo not Found"})
+				return
+			}
+
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		title := existing.Title
+
+		if input.Title != nil {
+			title = *input.Title
+		}
+
+		completed := existing.Completed
+		if input.Completed != nil {
+			completed = *input.Completed
+		}
+
+		todo, err := repository.UpdateTodo(pool, id, title, completed)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, todo)
 	}
 }

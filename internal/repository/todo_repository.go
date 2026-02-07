@@ -8,9 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-
-
-func CreateTodo (pool *pgxpool.Pool, title string, completed bool) (*models.ToDo, error){
+func CreateTodo(pool *pgxpool.Pool, title string, completed bool) (*models.ToDo, error) {
 	var ctx context.Context
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
@@ -31,15 +29,14 @@ func CreateTodo (pool *pgxpool.Pool, title string, completed bool) (*models.ToDo
 		&todo.UpdatedAt,
 	)
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
 	return &todo, nil
-
 }
 
-func GetAllTodos(pool *pgxpool.Pool)([] models.ToDo, error){
+func GetAllTodos(pool *pgxpool.Pool) ([]models.ToDo, error) {
 	var ctx context.Context
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
@@ -52,7 +49,7 @@ func GetAllTodos(pool *pgxpool.Pool)([] models.ToDo, error){
 	`
 	rows, err := pool.Query(ctx, query)
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
@@ -76,18 +73,16 @@ func GetAllTodos(pool *pgxpool.Pool)([] models.ToDo, error){
 		}
 
 		todos = append(todos, todo)
-
 	}
 
-	if err = rows.Err(); err != nil{
+	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
 	return todos, nil
-	
 }
 
-func GetTodoByID(pool *pgxpool.Pool, id int) (*models.ToDo, error){
+func GetTodoByID(pool *pgxpool.Pool, id int) (*models.ToDo, error) {
 	var ctx context.Context
 	var cancel context.CancelFunc
 
@@ -114,5 +109,34 @@ func GetTodoByID(pool *pgxpool.Pool, id int) (*models.ToDo, error){
 	}
 
 	return &todo, nil
+}
 
+func UpdateTodo(pool *pgxpool.Pool, id int, title string, completed bool) (*models.ToDo, error) {
+	var ctx context.Context
+	var cancel context.CancelFunc
+
+	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var query string = `
+	UPDATE todos
+	SET title = $1, completed = $2, updated_at = CURRENT_TIMESTAMP
+	WHERE id = $3
+	RETURNING id, title, completed, created_at, updated_at
+	`
+	var todo models.ToDo
+
+	var err error = pool.QueryRow(ctx, query, title, completed, id).Scan(
+		&todo.ID,
+		&todo.Title,
+		&todo.Completed,
+		&todo.CreatedAt,
+		&todo.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &todo, nil
 }
