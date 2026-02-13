@@ -5,6 +5,7 @@ import (
 	"todos_api/internal/config"
 	"todos_api/internal/database"
 	"todos_api/internal/handlers"
+	"todos_api/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -47,6 +48,9 @@ func main() {
 	router.DELETE("/todos/:id", handlers.DeleteTodoHandler(pool))
 
 	router.POST("/auth/register", handlers.CreateUserHandler(pool))
+	router.POST("/auth/login", handlers.LoginHandler(pool, cfg))
+
+	router.GET("/protected-test", middleware.AuthMiddleware(cfg), handlers.TestProtectedHandler())
 	router.Run(":" + cfg.Port)
 
 }
