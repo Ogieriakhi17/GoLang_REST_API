@@ -24,3 +24,5 @@ vendor/
 .DS_Store
 Thumbs.db
 EOF
+
+.env
