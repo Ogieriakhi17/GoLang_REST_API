@@ -97,7 +97,7 @@ func LoginHandler(pool *pgxpool.Pool, cfg *config.Config) gin.HandlerFunc {
 		claims := jwt.MapClaims{
 			"user_id": user.ID,
 			"email":   user.Email,
-			"exp":     time.Now().Add(24 * time.Hour),
+			"exp":     time.Now().Add(24 * time.Hour).Unix(),
 		}
 
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -110,5 +110,21 @@ func LoginHandler(pool *pgxpool.Pool, cfg *config.Config) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, LoginResponse{Token: tokenString})
+	}
+}
+
+func TestProtectedHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID, exists := c.Get("user_id")
+
+		if !exists {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "user_id not found in context"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Protected route accessed successfully!",
+			"user_id": userID,
+		})
 	}
 }
