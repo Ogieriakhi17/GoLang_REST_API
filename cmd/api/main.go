@@ -19,14 +19,14 @@ func main() {
 	cfg, err = config.Load() // create an instance of the config load
 
 	if err != nil {
-		log.Fatal("Unable to load config: %v", err)
+		log.Fatalf("Unable to load config: %v", err)
 	}
 
 	var pool *pgxpool.Pool
 
 	pool, err = database.Connect(cfg.DatabaseURL) // now create a pool form the config created
 	if err != nil {
-		log.Fatal("Failed to connect to the database")
+		log.Fatalf("Failed to connect to the database %v", err)
 	}
 	defer pool.Close()
 	var router *gin.Engine = gin.Default()
@@ -53,6 +53,9 @@ func main() {
 		protected.DELETE("/:id", handlers.DeleteTodoHandler(pool))
 	}
 	router.GET("/protected-test", middleware.AuthMiddleware(cfg), handlers.TestProtectedHandler())
-	router.Run(":" + cfg.Port)
+	
+	if err := router.Run(":" + cfg.Port); err != nil {
+	log.Fatalf("Failed to start server: %v", err)
+	}
 
 }
